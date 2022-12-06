@@ -1,0 +1,242 @@
+<?php 
+
+// header('Access-Control-Allow-Origin: https://www.videocrypt.in');
+   $token = $_REQUEST['id'];
+?>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>DRM Player</title>
+    <script src="./assets/js/jquery.min.js"></script>
+    <script src="./assets/js/shaka-player.compiled.debug.js"></script>
+    <script src="./assets/js/video.js"></script>
+    <script src="./assets/js/videojs-shaka.min.js"></script>
+    <script src="./assets/js/shaka-player.ui.js"></script>
+    <script src="./assets/js/videojs-seek-buttons.min.js"></script>
+    <script src="https://kmoskwiak.github.io/videojs-resolution-switcher/node_modules/videojs-resolution-switcher/lib/videojs-resolution-switcher.js"></script>
+    <script src="https://raw.githubusercontent.com/biggora/device-uuid/master/lib/device-uuid.min.js"></script>
+
+    <style>
+      /*dont remove this line it help for identidy font*/
+      @import url(https://fonts.googleapis.com/css?family=Material+Icons);
+    </style>
+    <link href="./assets/css/video-js.css" rel="stylesheet" />
+  </head>
+  <style type="text/css">
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    body {
+      height: 100vh;
+      background: #ccc;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      position: relative;
+    }
+    #my_video_1 {
+      box-shadow: 0 0 20px 0px black;
+      min-width: 100%;
+      min-height: 100%;
+    }
+    .contentMenu {
+      position: relative;
+      width: 4em;
+    }
+    .contentMenu .icon {
+      width: 100%;
+      bottom: 0;
+      position: absolute;
+      padding: 10px;
+      text-align: center;
+      color: white;
+    }
+    .contentMenu .icon:hover {
+      cursor: pointer;
+      color: gray;
+    }
+    .contentMenu .icon:hover + .menu {
+      transform: translate(-50%, -30px);
+      visibility: visible;
+      opacity: 1;
+    }
+    .contentMenu .menu {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transition: all 200ms;
+      display: flex;
+      justify-content: center;
+      flex-direction: column-reverse;
+      width: 100px;
+      transform: translate(-50%, -20px);
+      visibility: hidden;
+      opacity: 0;
+    }
+    .contentMenu .menu:hover {
+      transform: translate(-50%, -30px);
+      visibility: visible;
+      opacity: 1;
+    }
+    .contentMenu .menu:after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 0;
+      bottom: -15px;
+      left: calc(50% - 15px);
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 15px solid #333;
+    }
+    #auto {
+      background: #333;
+    }
+    #auto .current {
+      font-size: 10px;
+      margin-left: 3px;
+    }
+    #auto .current:before {
+      margin-left: -3px;
+      content: "(";
+      position: absolute;
+    }
+    #auto .current:after {
+      content: ")";
+      position: absolute;
+    }
+    .item {
+      position: relative;
+      text-align: center;
+      border: 0;
+      padding: 10px;
+      background: #444;
+    }
+    .item.selected {
+      background: #333;
+      font-weight: bold;
+    }
+    .item.selected:before {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      top: 50%;
+      border-radius: 50%;
+      background: #4caf50;
+      left: 10px;
+      transform: translateY(-50%);
+    }
+    .item:hover {
+      background: #333;
+      cursor: pointer;
+    }
+  </style>
+  <body>
+    <video
+      id="my_video_1"
+      class="video-js vjs-default-skin"
+      autoplay
+      controls
+      preload="auto"
+      width="640"
+      height="268"
+    >
+      <!-- <source src="https://d2tdtly6rg7g3p.cloudfront.net/file_library/videos/original/1669962007334_83180871903843700_video_VOD.mp4" type="video/mp4"> -->
+      <!-- <source src="https://d2tdtly6rg7g3p.cloudfront.net/file_library/videos/vod_drm_ios/3240252/1669962467_6140944651377301/1669962007334_83180871903843700_video_VOD.m3u8" type="application/x-mpegURL"> -->
+    </video>
+    <script>
+      const base = window.location;
+      //   var uuid = new DeviceUUID().get();
+      //   console.log(uuid, "uuid");
+      var toke_data = "";
+      $(document).ready(function () {
+        const formData = new FormData();
+        formData.append("name", "3240252_0_1368466527599193");
+        formData.append("flag", 1);
+
+        fetch(
+          'https://portal.ingeniumedu.com/generateTokenForDrm'
+        )
+          .then((res) => {
+            console.log(res)
+            return res.json();
+          })
+          .then((result) => {
+            // console.log(res);
+            let dashUri = result.data.link.file_url;
+            let licenseUri =
+              "https://www.videocrypt.in/index.php/rest_api/courses/course/on_request_create_video_license";
+            let widevineToken = result.data.link.token;
+            //toke_data = res.data.token;
+
+            var player = videojs("my_video_1", {
+              techOrder: ["shaka"],
+              playbackRates: [0.5, 1, 1.5, 2, 4],
+              headers: { "custom-header": "some value" },
+              shaka: {
+                debug: false,
+                sideload: true,
+                configuration: {
+                  drm: {
+                    servers: {
+                      "com.widevine.alpha":
+                        licenseUri + "?pallyconCustomdataV2=" + widevineToken,
+                    },
+                    advanced: {
+                      "com.widevine.alpha": {
+                        videoRobustness: "SW_SECURE_CRYPTO",
+                        audioRobustness: "SW_SECURE_CRYPTO",
+                      },
+                    },
+                  },
+                  // shaka player configuration - https://shaka-player-demo.appspot.com/docs/api/tutorial-config.html
+                },
+                licenseServerAuth: function (type, request) {
+                  if (type == shaka.net.NetworkingEngine.RequestType.LICENSE) {
+                    // This is the specific header name and value the server wants:
+                    // request.allowCrossSiteCredentials = true;
+                    // request.headers['Access-Control-Allow-Origin'] = "*";
+                    // request.headers['pallycon-customdata-v2'] = widevineToken;
+                  }
+                },
+              },
+            });
+            player.qualityPickerPlugin();
+            player.src([
+              {
+                type: "application/dash+xml",
+                src: dashUri,
+              },
+            ]);
+
+            player.seekButtons({
+              forward: 30,
+              back: 10,
+            });
+
+            player.on("error", function () {
+              console.log(JSON.parse(JSON.stringify(player.error())));
+            });
+
+            player
+              .play()
+              .then(function () {
+                console.log("autoplay was successful!");
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          });
+      });
+    </script>
+  </body>
+</html>
