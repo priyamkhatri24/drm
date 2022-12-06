@@ -171,7 +171,7 @@
             const finalres = JSON.parse(result.result)
             let dashUri = finalres.data.link.file_url;
             let licenseUri =
-              "https://www.videocrypt.in/index.php/rest_api/courses/course/on_request_create_video_license";
+              'aHR0cHM6Ly93d3cudmlkZW9jcnlwdC5pbi9pbmRleC5waHAvcmVzdF9hcGkvY291cnNlcy9jb3Vyc2Uvb25fcmVxdWVzdF9jcmVhdGVfdmlkZW9fbGljZW5zZQ==';
             let widevineToken = finalres.data.link.token;
             //toke_data = res.data.token;
 
@@ -186,7 +186,7 @@
                   drm: {
                     servers: {
                       "com.widevine.alpha":
-                        licenseUri + "?pallyconCustomdataV2=" + widevineToken,
+                        window.atob(licenseUri) + "?pallyconCustomdataV2=" + widevineToken,
                     },
                     advanced: {
                       "com.widevine.alpha": {
