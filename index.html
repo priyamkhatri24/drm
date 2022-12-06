@@ -155,6 +155,7 @@
     </video>
     <script>
       const base = window.location;
+      const video_name = window.location.search.split('=').pop();
       //   var uuid = new DeviceUUID().get();
       //   console.log(uuid, "uuid");
       var toke_data = "";
@@ -164,18 +165,18 @@
         formData.append("flag", 1);
 
         fetch(
-          'https://portal.ingeniumedu.com/generateTokenForDrm'
+          `https://portal.ingeniumedu.com/generateTokenForDrm?video_name=${video_name}`
         )
           .then((res) => {
             console.log(res)
             return res.json();
           })
           .then((result) => {
-            // console.log(res);
-            let dashUri = result.data.link.file_url;
+            const finalres = JSON.parse(result.result)
+            let dashUri = finalres.data.link.file_url;
             let licenseUri =
               "https://www.videocrypt.in/index.php/rest_api/courses/course/on_request_create_video_license";
-            let widevineToken = result.data.link.token;
+            let widevineToken = finalres.data.link.token;
             //toke_data = res.data.token;
 
             var player = videojs("my_video_1", {
